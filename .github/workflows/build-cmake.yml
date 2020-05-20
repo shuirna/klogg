@@ -1,0 +1,36 @@
+name: "CI: Build Test"
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    strategy:
+      matrix:
+        qt_version: [5.9.8, 5.12.8, 5.14.0]
+        platform: [ubuntu-latest, windows-latest, macos-latest]
+
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: seanmiddleditch/gha-setup-ninja@master
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2
+      with:
+        version: ${{ matrix.qt_version }}
+
+    - name: cmake
+      run: |
+      mkdir build
+      cd build
+      cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
+
+    - name: cmake build
+      run: cmake --build build
+
+    - name: cmake test
+      run: |
+      cd build
+      ctest --verbose
